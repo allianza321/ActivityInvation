@@ -26,7 +26,7 @@
         <button class="btn-send" onclick="sendActivityFlex()">點此選擇好友發送邀請</button>
         <div id="pcTip" class="pc-tip">💡 電腦版提示：您可以直接登入發送，<br>或使用手機 LINE 開啟此連結以獲得更順暢的分享體驗。</div>
         <div id="mobileTip" class="mobile-tip">※ 請務必在 LINE 程式內開啟此頁面</div>
-        <div class="version-tag">Ver. 19</div>
+        <div class="version-tag">Ver. 20</div>
     </div>
 
     <script>
@@ -51,10 +51,11 @@
         }
 
         async function initLiff() {
+            // 解析指令，避免使用可能導致 404 的路徑格式
             const params = new URLSearchParams(window.location.search);
-            if (params.get('action') === 'cal') {
+            if (params.get('op') === 'cal') {
                 downloadIcs();
-                setTimeout(() => { window.location.href = window.location.origin + window.location.pathname; }, 1000);
+                setTimeout(() => { window.location.href = window.location.origin + window.location.pathname; }, 800);
                 return;
             }
             try {
@@ -77,8 +78,10 @@
         async function sendActivityFlex() {
             const urlParams = new URLSearchParams(window.location.search);
             const referrer = urlParams.get('from') || 'General';
-            const calendarAction = `https://liff.line.me/${liffId}?action=cal`;
-            const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("安聯人壽 宏國通訊處");
+            
+            // 修改參數名稱為 op=cal 以避開特定伺服器過濾
+            const calendarAction = `https://liff.line.me/${liffId}?op=cal`;
+            const mapUrl = "http://googleusercontent.com/maps.google.com/9" + encodeURIComponent("安聯人壽 宏國通訊處");
 
             if (liff.isApiAvailable('shareTargetPicker')) {
                 try {

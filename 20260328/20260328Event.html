@@ -12,7 +12,8 @@
         .event-title { color: #E67E22; font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem; }
         .info { color: #666; font-size: 0.95rem; margin-bottom: 1.5rem; }
         .btn-send { padding: 16px 40px; font-size: 1.1rem; background: linear-gradient(135deg, #0056b3 0%, #003777 100%); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(0,55,119,0.3); transition: 0.3s; }
-        .tip { color: #ff0000; font-size: 0.85rem; margin-top: 1.2rem; font-weight: bold; }
+        .pc-tip { color: #7f8c8d; font-size: 0.85rem; margin-top: 1.2rem; line-height: 1.6; display: none; }
+        .mobile-tip { color: #ff0000; font-size: 0.85rem; margin-top: 1.2rem; font-weight: bold; display: none; }
         .version-tag { position: absolute; bottom: 10px; left: 15px; font-size: 10px; color: #e0e0e0; }
     </style>
 </head>
@@ -21,9 +22,13 @@
         <h2>安聯人壽保戶講座</h2>
         <div class="event-title">2026年十二星座開運解析</div>
         <div class="info">宏國通訊處 2026/3/28(六)</div>
+        
         <button class="btn-send" onclick="sendActivityFlex()">點此選擇好友發送邀請</button>
-        <p class="tip">※ 請務必在 LINE 程式內開啟此頁面</p>
-        <div class="version-tag">Ver. 13</div>
+        
+        <div id="pcTip" class="pc-tip">💡 電腦版提示：您可以直接登入發送，<br>或使用手機 LINE 開啟此連結以獲得更順暢的分享體驗。</div>
+        <div id="mobileTip" class="mobile-tip">※ 請務必在 LINE 程式內開啟此頁面</div>
+        
+        <div class="version-tag">Ver. 14</div>
     </div>
 
     <script>
@@ -32,31 +37,56 @@
         async function initLiff() {
             try {
                 await liff.init({ liffId: liffId });
-                if (!liff.isInClient()) {
-                    window.location.href = `line://app/${liffId}`;
-                } else if (!liff.isLoggedIn()) {
-                    liff.login();
+                
+                if (liff.isInClient()) {
+                    if (!liff.isLoggedIn()) { liff.login(); }
+                } else {
+                    // 偵測是否為行動裝置
+                    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                    if (isMobile) {
+                        document.getElementById('mobileTip').style.display = 'block';
+                        // 手機環境嘗試喚起 LINE
+                        window.location.href = `line://app/${liffId}`;
+                    } else {
+                        // 電腦環境顯示溫馨提示，不強制跳轉
+                        document.getElementById('pcTip').style.display = 'block';
+                        if (!liff.isLoggedIn()) { liff.login(); }
+                    }
                 }
             } catch (err) {
                 console.error("LIFF 初始化失敗", err);
             }
         }
 
+        function downloadIcs() {
+            const icsData = "BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\n" +
+                "SUMMARY:【安聯人壽】2026年十二星座開運解析\n" +
+                "DTSTART:20260328T010000Z\n" +
+                "DTEND:20260328T040000Z\n" +
+                "LOCATION:台北市信義區基隆路二段51號10樓之二(安聯人壽)\n" +
+                "DESCRIPTION:歡迎參加宏國通訊處舉辦的星座開運講座！建議提前一天設定提醒。\n" +
+                "BEGIN:VALARM\nTRIGGER:-P1D\nACTION:DISPLAY\nDESCRIPTION:Reminder\nEND:VALARM\n" + // 設定前一天提醒
+                "END:VEVENT\nEND:VCALENDAR";
+            const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = window.URL.createObjectURL(blob);
+            link.setAttribute('download', 'event.ics');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
         async function sendActivityFlex() {
             const urlParams = new URLSearchParams(window.location.search);
             const referrer = urlParams.get('from') || 'General';
 
-            // 更新行事曆連結：加入醒目的提醒建議
-            const calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE" +
-                "&text=" + encodeURIComponent("【安聯人壽保戶講座】2026年十二星座開運解析") +
-                "&dates=20260328T010000Z/20260328T040000Z" + 
-                "&details=" + encodeURIComponent("🔔 溫馨提醒：建議將提醒設為「活動前一天」。\n\n地點：台北市信義區基隆路二段51號10樓之二(安聯人壽)\n宏國通訊處誠摯邀約。") +
-                "&location=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二(安聯人壽)") +
-                "&trp=true";
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            // 手機用 ICS, 電腦用 Google Web
+            const calendarAction = isMobile ? "javascript:downloadIcs()" : "https://www.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent("【安聯人壽】2026年十二星座開運解析") + "&dates=20260328T010000Z/20260328T040000Z&location=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二(安聯人壽)") + "&details=" + encodeURIComponent("建議手動設定前一天提醒。");
 
             if (liff.isApiAvailable('shareTargetPicker')) {
                 try {
-                    const result = await liff.shareTargetPicker([
+                    await liff.shareTargetPicker([
                         {
                             "type": "flex",
                             "altText": "您收到一份來自 宏國通訊處 的活動熱情邀約！",
@@ -65,8 +95,7 @@
                                 "hero": {
                                     "type": "image",
                                     "url": "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328_TuYuPing_header.JPG?raw=true",
-                                    "size": "full", "aspectRatio": "20:13", "aspectMode": "cover",
-                                    "action": { "type": "uri", "uri": "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328%E4%BF%9D%E6%88%B6%E8%AC%9B%E5%BA%A7%E6%B4%BB%E5%8B%95.JPG?raw=true" }
+                                    "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"
                                 },
                                 "body": {
                                     "type": "box", "layout": "vertical", "contents": [
@@ -83,7 +112,7 @@
                                             },
                                             { 
                                                 "type": "box", "layout": "baseline", "spacing": "sm",
-                                                "action": { "type": "uri", "label": "加入行事曆", "uri": calendarUrl },
+                                                "action": { "type": "uri", "label": "加入行事曆", "uri": isMobile ? `https://liff.line.me/${liffId}/download-ics` : calendarAction }, 
                                                 "contents": [
                                                     { "type": "text", "text": "時間", "color": "#aaaaaa", "size": "sm", "flex": 1 },
                                                     { "type": "text", "text": "2026/3/28(六) 09:00 - 12:00", "wrap": true, "color": "#0056b3", "size": "sm", "flex": 5, "decoration": "underline" }
@@ -97,15 +126,20 @@
                                         { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "即刻報名", "uri": "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform" } },
                                         { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "分享好友", "uri": `https://liff.line.me/${liffId}?from=${referrer}` } }
                                     ]
-                                },
-                                "styles": { "footer": { "separator": true } }
+                                }
                             }
                         }
                     ]);
-                    if (result) { liff.closeWindow(); }
-                } catch (error) {
-                    alert("發送已取消或發生錯誤");
-                }
+                    liff.closeWindow();
+                } catch (error) { console.error(error); }
+            }
+        }
+        
+        // 為了讓 Flex Message 內的連結能觸發 ICS 下載，需在 init 內增加判斷
+        window.onload = function() {
+            if (window.location.href.includes('download-ics')) {
+                downloadIcs();
+                setTimeout(() => { window.history.back(); }, 1000);
             }
         }
         initLiff();

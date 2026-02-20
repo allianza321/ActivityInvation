@@ -12,7 +12,6 @@
         .event-title { color: #E67E22; font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem; }
         .info { color: #666; font-size: 0.95rem; margin-bottom: 1.5rem; }
         .btn-send { padding: 16px 40px; font-size: 1.1rem; background: linear-gradient(135deg, #0056b3 0%, #003777 100%); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(0,55,119,0.3); transition: 0.3s; }
-        .btn-send:hover { transform: scale(1.02); }
         .tip { color: #ff0000; font-size: 0.85rem; margin-top: 1.2rem; font-weight: bold; }
         .version-tag { position: absolute; bottom: 10px; left: 15px; font-size: 10px; color: #e0e0e0; }
     </style>
@@ -22,11 +21,9 @@
         <h2>安聯人壽保戶講座</h2>
         <div class="event-title">2026年十二星座開運解析</div>
         <div class="info">宏國通訊處 2026/3/28(六)</div>
-        
         <button class="btn-send" onclick="sendActivityFlex()">點此選擇好友發送邀請</button>
-        
         <p class="tip">※ 請務必在 LINE 程式內開啟此頁面</p>
-        <div class="version-tag">Ver. 12</div>
+        <div class="version-tag">Ver. 13</div>
     </div>
 
     <script>
@@ -37,10 +34,8 @@
                 await liff.init({ liffId: liffId });
                 if (!liff.isInClient()) {
                     window.location.href = `line://app/${liffId}`;
-                } else {
-                    if (!liff.isLoggedIn()) {
-                        liff.login();
-                    }
+                } else if (!liff.isLoggedIn()) {
+                    liff.login();
                 }
             } catch (err) {
                 console.error("LIFF 初始化失敗", err);
@@ -48,16 +43,15 @@
         }
 
         async function sendActivityFlex() {
-            // 抓取轉發來源參數
             const urlParams = new URLSearchParams(window.location.search);
             const referrer = urlParams.get('from') || 'General';
 
-            // 建立 Google 行事曆連結 (設定 3/28 09:00-12:00)
+            // 更新行事曆連結：加入醒目的提醒建議
             const calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE" +
                 "&text=" + encodeURIComponent("【安聯人壽保戶講座】2026年十二星座開運解析") +
                 "&dates=20260328T010000Z/20260328T040000Z" + 
-                "&details=" + encodeURIComponent("歡迎參加宏國通訊處舉辦的星座開運講座！\n由安聯人壽主辦。") +
-                "&location=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二") +
+                "&details=" + encodeURIComponent("🔔 溫馨提醒：建議將提醒設為「活動前一天」。\n\n地點：台北市信義區基隆路二段51號10樓之二(安聯人壽)\n宏國通訊處誠摯邀約。") +
+                "&location=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二(安聯人壽)") +
                 "&trp=true";
 
             if (liff.isApiAvailable('shareTargetPicker')) {
@@ -81,7 +75,7 @@
                                         { "type": "box", "layout": "vertical", "margin": "lg", "spacing": "sm", "contents": [
                                             { 
                                                 "type": "box", "layout": "baseline", "spacing": "sm",
-                                                "action": { "type": "uri", "label": "開啟地圖", "uri": "https://maps.app.goo.gl/2ZRBJU2hsQNRqAXh7" },
+                                                "action": { "type": "uri", "label": "開啟地圖", "uri": "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二(安聯人壽)") },
                                                 "contents": [
                                                     { "type": "text", "text": "地點", "color": "#aaaaaa", "size": "sm", "flex": 1 },
                                                     { "type": "text", "text": "台北市信義區基隆路二段51號10樓之二(安聯人壽)", "wrap": true, "color": "#0056b3", "size": "sm", "flex": 5, "decoration": "underline" }
@@ -100,7 +94,7 @@
                                 },
                                 "footer": {
                                     "type": "box", "layout": "vertical", "spacing": "sm", "contents": [
-                                        { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "即刻報名", "uri": "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform?usp=header" } },
+                                        { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "即刻報名", "uri": "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform" } },
                                         { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "分享好友", "uri": `https://liff.line.me/${liffId}?from=${referrer}` } }
                                     ]
                                 },
@@ -108,11 +102,9 @@
                             }
                         }
                     ]);
-                    if (result) {
-                        liff.closeWindow();
-                    }
+                    if (result) { liff.closeWindow(); }
                 } catch (error) {
-                    alert("請確認是否已授權發送訊息，或在 LINE 內部開啟頁面");
+                    alert("發送已取消或發生錯誤");
                 }
             }
         }

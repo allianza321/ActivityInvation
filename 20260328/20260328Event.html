@@ -3,22 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3/28 講座發送器 V8</title>
+    <title>3/28 保戶講座資訊轉發</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
-        body { font-family: "Microsoft JhengHei", sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f0f4f8; }
-        .card { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 85%; }
-        h2 { color: #003777; margin-bottom: 0.5rem; }
-        .btn-send { padding: 16px 40px; font-size: 1.1rem; background: linear-gradient(135deg, #0056b3 0%, #003777 100%); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(0,55,119,0.3); }
-        .info { color: #666; font-size: 0.9rem; margin-top: 1rem; line-height: 1.6; }
+        body { font-family: "Microsoft JhengHei", sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f4f7f6; }
+        .card { background: white; padding: 2.5rem; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); text-align: center; max-width: 85%; position: relative; }
+        h2 { color: #003777; margin-bottom: 0.5rem; font-size: 1.4rem; }
+        .event-title { color: #E67E22; font-size: 1.1rem; font-weight: bold; margin-bottom: 0.5rem; }
+        .info { color: #666; font-size: 0.95rem; margin-bottom: 1.5rem; }
+        .btn-send { padding: 16px 40px; font-size: 1.1rem; background: linear-gradient(135deg, #0056b3 0%, #003777 100%); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(0,55,119,0.3); transition: 0.3s; }
+        .btn-send:hover { transform: scale(1.02); }
+        .tip { color: #ff0000; font-size: 0.85rem; margin-top: 1.2rem; font-weight: bold; }
+        .version-tag { position: absolute; bottom: 10px; left: 15px; font-size: 10px; color: #e0e0e0; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2>活動邀請發送器</h2>
-        <div class="info">宏國通訊處 2026/3/28<br><b>2026年十二星座開運解析</b></div>
-        <br>
+        <h2>安聯人壽保戶講座</h2>
+        <div class="event-title">2026年十二星座開運解析</div>
+        <div class="info">宏國通訊處 2026/3/28(六)</div>
+        
         <button class="btn-send" onclick="sendActivityFlex()">點此選擇好友發送邀請</button>
+        
+        <p class="tip">※ 請務必在 LINE 程式內開啟此頁面</p>
+        <div class="version-tag">Ver. 9</div>
     </div>
 
     <script>
@@ -27,10 +35,8 @@
         async function initLiff() {
             try {
                 await liff.init({ liffId: liffId });
-                
-                // 核心修正：強制在 LINE App 內開啟
+                // 強制在 LINE 內部開啟以避免登入循環
                 if (!liff.isInClient()) {
-                    // 若在外部瀏覽器，嘗試強制喚起 LINE 並開啟此 LIFF
                     window.location.href = `line://app/${liffId}`;
                 } else {
                     if (!liff.isLoggedIn()) {
@@ -49,48 +55,43 @@
                         {
                             "type": "flex",
                             "altText": "您收到一份來自 宏國通訊處 的活動熱情邀約！",
-                            "contents": 
-                            {
-                              "type": "bubble",
-                              "hero": {
-                                "type": "image",
-                                "url": "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328_TuYuPing_header.JPG?raw=true",
-                                "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"
-                              },
-                              "body": {
-                                "type": "box", "layout": "vertical", "contents": [
-                                  { "type": "text", "text": "安聯人壽保戶講座", "weight": "bold", "size": "xl" },
-                                  { "type": "text", "text": "2026年十二星座開運解析", "size": "md", "color": "#E67E22", "weight": "bold", "margin": "sm" },
-                                  { "type": "box", "layout": "vertical", "margin": "lg", "spacing": "sm", "contents": [
-                                      { "type": "box", "layout": "baseline", "spacing": "sm", "contents": [
-                                          { "type": "text", "text": "地點", "color": "#aaaaaa", "size": "sm", "flex": 1 },
-                                          { "type": "text", "text": "台北市信義區基隆路二段51號10樓之二(安聯人壽)", "wrap": true, "color": "#666666", "size": "sm", "flex": 5 }
-                                        ]
-                                      },
-                                      { "type": "box", "layout": "baseline", "spacing": "sm", "contents": [
-                                          { "type": "text", "text": "時間", "color": "#aaaaaa", "size": "sm", "flex": 1 },
-                                          { "type": "text", "text": "2026/3/28(六) 09:00 - 12:00", "wrap": true, "color": "#666666", "size": "sm", "flex": 5 }
-                                        ]
-                                      }
+                            "contents": {
+                                "type": "bubble",
+                                "hero": {
+                                    "type": "image",
+                                    "url": "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328_TuYuPing_header.JPG?raw=true",
+                                    "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"
+                                },
+                                "body": {
+                                    "type": "box", "layout": "vertical", "contents": [
+                                        { "type": "text", "text": "安聯人壽保戶講座", "weight": "bold", "size": "xl" },
+                                        { "type": "text", "text": "2026年十二星座開運解析", "size": "md", "color": "#E67E22", "weight": "bold", "margin": "sm" },
+                                        { "type": "box", "layout": "vertical", "margin": "lg", "spacing": "sm", "contents": [
+                                            { "type": "box", "layout": "baseline", "spacing": "sm", "contents": [
+                                                { "type": "text", "text": "地點", "color": "#aaaaaa", "size": "sm", "flex": 1 },
+                                                { "type": "text", "text": "台北市信義區基隆路二段51號10樓之二(安聯人壽)", "wrap": true, "color": "#666666", "size": "sm", "flex": 5 }
+                                            ]},
+                                            { "type": "box", "layout": "baseline", "spacing": "sm", "contents": [
+                                                { "type": "text", "text": "時間", "color": "#aaaaaa", "size": "sm", "flex": 1 },
+                                                { "type": "text", "text": "2026/3/28(六) 09:00 - 12:00", "wrap": true, "color": "#666666", "size": "sm", "flex": 5 }
+                                            ]}
+                                        ]}
                                     ]
-                                  }
-                                ]
-                              },
-                              "footer": {
-                                "type": "box", "layout": "vertical", "spacing": "sm", "contents": [
-                                  { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "即刻報名", "uri": "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform" } },
-                                  { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "分享好友", "uri": `https://liff.line.me/${liffId}` } }
-                                ]
-                              }
+                                },
+                                "footer": {
+                                    "type": "box", "layout": "vertical", "spacing": "sm", "contents": [
+                                        { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "即刻報名", "uri": "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform" } },
+                                        { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "分享好友", "uri": `https://liff.line.me/${liffId}` } }
+                                    ]
+                                }
                             }
                         }
                     ]);
                     if (result) {
-                        // 記錄轉發成功事件 (若有 GA4 可在此送出)
                         liff.closeWindow();
                     }
                 } catch (error) {
-                    alert("請點擊右上角「...」並選擇「在 LINE 中開啟」");
+                    alert("請確認是否已授權發送訊息，或在 LINE 內部開啟頁面");
                 }
             }
         }

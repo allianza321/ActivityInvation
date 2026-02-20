@@ -26,7 +26,7 @@
         
         <div id="pcTip" class="pc-tip">💡 提示：若使用電腦網頁，請先登入 LINE。<br>使用手機 LINE 開啟連結可獲得更順暢的分享體驗。</div>
         
-        <div class="version-tag">Ver. 12.2</div>
+        <div class="version-tag">Ver. 12.1</div>
     </div>
 
     <script>
@@ -35,74 +35,87 @@
         async function initLiff() {
             try {
                 await liff.init({ liffId: liffId });
+                
                 if (liff.isInClient()) {
                     if (!liff.isLoggedIn()) { liff.login(); }
                 } else {
+                    // 偵測是否為電腦版
                     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-                    if (!isMobile) { document.getElementById('pcTip').style.display = 'block'; }
+                    if (!isMobile) {
+                        document.getElementById('pcTip').style.display = 'block';
+                    }
                     if (!liff.isLoggedIn()) { liff.login(); }
                 }
-            } catch (err) { console.error("LIFF 初始化失敗", err); }
+            } catch (err) {
+                console.error("LIFF 初始化失敗", err);
+            }
         }
 
         async function sendActivityFlex() {
             const urlParams = new URLSearchParams(window.location.search);
             const referrer = urlParams.get('from') || 'General';
+
+            // 更新行事曆連結：加入前一天提醒的導引文字
             const calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE" +
                 "&text=" + encodeURIComponent("【安聯人壽】2026年十二星座開運解析") +
                 "&dates=20260328T010000Z/20260328T040000Z" + 
-                "&details=" + encodeURIComponent("🔔 溫馨提醒：建議將提醒時間設定為「活動前一天」。") +
-                "&location=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二(宏國通訊處)");
+                "&details=" + encodeURIComponent("🔔 溫馨提醒：建議將提醒時間設定為「活動前一天」。\n\n歡迎參加宏國通訊處舉辦的星座開運講座！") +
+                "&location=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二(宏國通訊處)") +
+                "&trp=true";
 
             if (liff.isApiAvailable('shareTargetPicker')) {
                 try {
-                    await liff.shareTargetPicker([{
-                        "type": "flex",
-                        "altText": "您收到一份來自 宏國通訊處 的活動熱情邀約！",
-                        "contents": {
-                            "type": "bubble",
-                            "hero": {
-                                "type": "image",
-                                "url": "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328_TuYuPing_header.JPG?raw=true",
-                                "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"
-                            },
-                            "body": {
-                                "type": "box", "layout": "vertical", "contents": [
-                                    { "type": "text", "text": "安聯人壽保戶講座", "weight": "bold", "size": "xl" },
-                                    { "type": "text", "text": "2026年十二星座開運解析", "size": "md", "color": "#E67E22", "weight": "bold", "margin": "sm" },
-                                    { "type": "box", "layout": "vertical", "margin": "xl", "spacing": "sm", "contents": [
-                                        { 
-                                            "type": "box", "layout": "baseline", "spacing": "sm",
-                                            "action": { "type": "uri", "label": "加入行事曆", "uri": calendarUrl },
-                                            "contents": [
-                                                { "type": "text", "text": "時間", "color": "#aaaaaa", "size": "sm", "flex": 1 },
-                                                { "type": "text", "text": "2026/3/28(六) 09:00 - 12:00", "wrap": true, "color": "#0056b3", "size": "sm", "flex": 5, "decoration": "underline" }
-                                            ]
-                                        },
-                                        { "type": "spacer", "size": "md" },
-                                        { "type": "separator", "margin": "md" },
-                                        { "type": "spacer", "size": "md" },
-                                        { 
-                                            "type": "box", "layout": "baseline", "spacing": "sm",
-                                            "action": { "type": "uri", "label": "開啟地圖", "uri": "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("安聯人壽 宏國通訊處") },
-                                            "contents": [
-                                                { "type": "text", "text": "地點", "color": "#aaaaaa", "size": "sm", "flex": 1 },
-                                                { "type": "text", "text": "台北市信義區基隆路二段51號10樓之二(宏國通訊處)", "wrap": true, "color": "#0056b3", "size": "sm", "flex": 5, "decoration": "underline" }
-                                            ]
-                                        }
-                                    ]}
-                                ]
-                            },
-                            "footer": {
-                                "type": "box", "layout": "vertical", "spacing": "sm", "contents": [
-                                    { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "即刻報名", "uri": "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform" } },
-                                    { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "分享好友", "uri": `https://liff.line.me/${liffId}?from=${referrer}` } }
-                                ]
+                    const result = await liff.shareTargetPicker([
+                        {
+                            "type": "flex",
+                            "altText": "您收到一份來自 宏國通訊處 的活動熱情邀約！",
+                            "contents": {
+                                "type": "bubble",
+                                "hero": {
+                                    "type": "image",
+                                    "url": "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328_TuYuPing_header.JPG?raw=true",
+                                    "size": "full", "aspectRatio": "20:13", "aspectMode": "cover"
+                                },
+                                "body": 
+                                    { 
+                                                "type": "box", "layout": "baseline", "spacing": "sm",
+                                                "action": { "type": "uri", "label": "加入行事曆", "uri": calendarUrl },
+                                                "contents": [
+                                                    { "type": "text", "text": "時間", "color": "#aaaaaa", "size": "sm", "flex": 1 },
+                                                    { "type": "text", "text": "2026/3/28(六) 09:00 - 12:00", "wrap": true, "color": "#0056b3", "size": "sm", "flex": 5, "decoration": "underline" }
+                                                ]
+                                            },
+                                                                        {
+                                    "type": "box", "layout": "vertical", "contents": [
+                                        { "type": "text", "text": "安聯人壽保戶講座", "weight": "bold", "size": "xl" },
+                                        { "type": "text", "text": "2026年十二星座開運解析", "size": "md", "color": "#E67E22", "weight": "bold", "margin": "sm" },
+                                        { "type": "box", "layout": "vertical", "margin": "lg", "spacing": "sm", "contents": [
+                                            { 
+                                                "type": "box", "layout": "baseline", "spacing": "sm",
+                                                "action": { "type": "uri", "label": "開啟地圖", "uri": "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("安聯人壽 宏國通訊處") },
+                                                "contents": [
+                                                    { "type": "text", "text": "地點", "color": "#aaaaaa", "size": "sm", "flex": 1 },
+                                                    { "type": "text", "text": "台北市信義區基隆路二段51號10樓之二(宏國通訊處)", "wrap": true, "color": "#0056b3", "size": "sm", "flex": 5, "decoration": "underline" }
+                                                ]
+                                            }
+                                        ]}
+                                    ]
+                                },
+                                "footer": {
+                                    "type": "box", "layout": "vertical", "spacing": "sm", "contents": [
+                                        { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "即刻報名", "uri": "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform" } },
+                                        { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "分享好友", "uri": `https://liff.line.me/${liffId}?from=${referrer}` } }
+                                    ]
+                                }
                             }
                         }
-                    }]);
-                    liff.closeWindow();
-                } catch (error) { console.error(error); }
+                    ]);
+                    if (result) {
+                        liff.closeWindow();
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
             }
         }
         initLiff();

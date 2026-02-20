@@ -22,10 +22,10 @@
         <h2>安聯人壽保戶講座</h2>
         <div class="event-title">2026年十二星座開運解析</div>
         <div class="info">宏國通訊處 2026/3/28(六)</div>
-        <button class="btn-send" onclick="sendActivityFlex()">點此選擇好友發送邀請</button>
+        <button class="btn-send" id="mainBtn" onclick="sendActivityFlex()">點此選擇好友發送邀請</button>
         <div id="pcTip" class="pc-tip">💡 電腦版提示：您可以直接登入發送，<br>或使用手機 LINE 開啟此連結以獲得更順暢的分享體驗。</div>
         <div id="mobileTip" class="mobile-tip">※ 請務必在 LINE 程式內開啟此頁面</div>
-        <div class="version-tag">Ver. 16</div>
+        <div class="version-tag">Ver. 17</div>
     </div>
 
     <script>
@@ -35,6 +35,14 @@
             try {
                 await liff.init({ liffId: liffId });
                 const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+                
+                // 檢查是否是點擊行事曆觸發的頁面載入
+                const params = new URLSearchParams(window.location.search);
+                if (params.get('action') === 'cal') {
+                    handleCalendarDownload();
+                    return;
+                }
+
                 if (liff.isInClient()) {
                     if (!liff.isLoggedIn()) { liff.login(); }
                 } else {
@@ -49,22 +57,25 @@
             } catch (err) { console.error("LIFF 初始化失敗", err); }
         }
 
-        function downloadIcs() {
+        function handleCalendarDownload() {
             const icsData = "BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\n" +
                 "SUMMARY:【安聯人壽】2026年十二星座開運解析\n" +
                 "DTSTART:20260328T010000Z\n" +
                 "DTEND:20260328T040000Z\n" +
                 "LOCATION:台北市信義區基隆路二段51號10樓之二(宏國通訊處)\n" +
-                "DESCRIPTION:歡迎參加宏國通訊處舉辦的星座開運講座！建議提前一天設定提醒。\n" +
+                "DESCRIPTION:歡迎參加宏國通訊處舉辦的星座開運講座！\n" +
                 "BEGIN:VALARM\nTRIGGER:-P1D\nACTION:DISPLAY\nDESCRIPTION:Reminder\nEND:VALARM\n" +
                 "END:VEVENT\nEND:VCALENDAR";
-            const blob = new Blob([icsData], { type: 'text/calendar;charset=utf-8' });
-            const link = document.createElement('a');
-            link.href = window.URL.createObjectURL(blob);
-            link.setAttribute('download', 'event.ics');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            
+            const encodedIcs = encodeURIComponent(icsData);
+            window.location.href = 'data:text/calendar;charset=utf-8,' + encodedIcs;
+            
+            // 下載後引導回原網址，不顯示空白頁
+            setTimeout(() => {
+                const cleanUrl = window.location.origin + window.location.pathname;
+                window.history.replaceState({}, '', cleanUrl);
+                window.location.reload();
+            }, 500);
         }
 
         async function sendActivityFlex() {
@@ -72,7 +83,10 @@
             const referrer = urlParams.get('from') || 'General';
             const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
             
-            const calendarAction = isMobile ? `https://liff.line.me/${liffId}?action=ics` : "https://www.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent("【安聯人壽】2026年十二星座開運解析") + "&dates=20260328T010000Z/20260328T040000Z&location=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二(宏國通訊處)") + "&details=" + encodeURIComponent("建議手動設定前一天提醒。");
+            // 行事曆動作連結
+            const calendarUrl = `https://liff.line.me/${liffId}?action=cal`;
+            // 地圖直接搜尋關鍵字
+            const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("安聯人壽 宏國通訊處");
 
             if (liff.isApiAvailable('shareTargetPicker')) {
                 try {
@@ -93,7 +107,7 @@
                                     { "type": "box", "layout": "vertical", "margin": "lg", "spacing": "sm", "contents": [
                                         { 
                                             "type": "box", "layout": "baseline", "spacing": "sm",
-                                            "action": { "type": "uri", "uri": "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二(宏國通訊處)") },
+                                            "action": { "type": "uri", "uri": mapUrl },
                                             "contents": [
                                                 { "type": "text", "text": "地點", "color": "#aaaaaa", "size": "sm", "flex": 1 },
                                                 { "type": "text", "text": "台北市信義區基隆路二段51號10樓之二(宏國通訊處)", "wrap": true, "color": "#0056b3", "size": "sm", "flex": 5, "decoration": "underline" }
@@ -101,7 +115,7 @@
                                         },
                                         { 
                                             "type": "box", "layout": "baseline", "spacing": "sm",
-                                            "action": { "type": "uri", "uri": calendarAction },
+                                            "action": { "type": "uri", "uri": calendarUrl },
                                             "contents": [
                                                 { "type": "text", "text": "時間", "color": "#aaaaaa", "size": "sm", "flex": 1 },
                                                 { "type": "text", "text": "2026/3/28(六) 09:00 - 12:00", "wrap": true, "color": "#0056b3", "size": "sm", "flex": 5, "decoration": "underline" }
@@ -122,17 +136,6 @@
                 } catch (error) { console.error(error); }
             }
         }
-        
-        window.addEventListener('load', function() {
-            const params = new URLSearchParams(window.location.search);
-            if (params.get('action') === 'ics') {
-                downloadIcs();
-                setTimeout(() => { 
-                    const newUrl = window.location.origin + window.location.pathname;
-                    window.history.replaceState({}, '', newUrl);
-                }, 1500);
-            }
-        });
         
         initLiff();
     </script>

@@ -3,31 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>安聯人壽保戶講座發送器</title>
+    <title>安聯人壽保戶講座發送器 V7</title>
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <style>
         body { font-family: "Microsoft JhengHei", sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; background-color: #f4f7f6; }
         .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); text-align: center; max-width: 80%; }
         h2 { color: #003777; margin-bottom: 1rem; font-size: 1.25rem; }
         .btn-send { padding: 14px 35px; font-size: 1rem; background: linear-gradient(135deg, #0056b3 0%, #003777 100%); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 12px rgba(0,55,119,0.3); transition: 0.3s; }
-        .btn-send:hover { transform: scale(1.03); box-shadow: 0 6px 15px rgba(0,55,119,0.4); }
-        .desc { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; line-height: 1.5; }
+        .tip { color: #ff0000; font-size: 0.8rem; margin-top: 1rem; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="card">
         <h2>安聯人壽保戶講座</h2>
-        <p class="desc">宏國通訊處 2026/3/28(六)<br>專業講座活動邀約</p>
+        <p>宏國通訊處 2026/3/28(六)</p>
         <button class="btn-send" onclick="sendActivityFlex()">選擇好友發送邀請</button>
+        <p class="tip">※ 請務必在 LINE 程式內開啟此頁面</p>
     </div>
 
     <script>
         async function initLiff() {
             try {
-                // 使用您指定的 LIFF ID
+                // 增加強制重新導向邏輯，確保在 LINE 內部開啟
                 await liff.init({ liffId: "2009178037-6FFsbvG7" });
                 if (!liff.isLoggedIn()) {
-                    liff.login();
+                    liff.login(); 
                 }
             } catch (err) {
                 console.error("LIFF 初始化失敗", err);
@@ -35,6 +35,12 @@
         }
 
         async function sendActivityFlex() {
+            // 檢查是否在 LINE 內部瀏覽器
+            if (!liff.isInClient()) {
+                alert("請點擊視窗右上角「...」，並選擇「在 LINE 中開啟」以快速分享。");
+                return;
+            }
+
             if (liff.isApiAvailable('shareTargetPicker')) {
                 try {
                     const result = await liff.shareTargetPicker([
@@ -42,7 +48,7 @@
                             "type": "flex",
                             "altText": "您收到一份來自 宏國通訊處 的活動熱情邀約！",
                             "contents": 
-                            // --- 您提供的 Simulator JSON 開始 ---
+                            // --- 您的 JSON 內容 (已整合分享連結優化) ---
                             {
                               "type": "bubble",
                               "hero": {
@@ -50,55 +56,18 @@
                                 "url": "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328_TuYuPing_header.JPG?raw=true",
                                 "size": "full",
                                 "aspectRatio": "20:13",
-                                "aspectMode": "cover",
-                                "action": {
-                                  "type": "uri",
-                                  "uri": "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328%E4%BF%9D%E6%88%B6%E8%AC%9B%E5%BA%A7%E6%B4%BB%E5%8B%95.JPG?raw=true"
-                                }
+                                "aspectMode": "cover"
                               },
                               "body": {
-                                "type": "box",
-                                "layout": "vertical",
-                                "contents": [
-                                  {
-                                    "type": "text",
-                                    "text": "安聯人壽保戶講座",
-                                    "weight": "bold",
-                                    "size": "xl"
-                                  },
-                                  {
-                                    "type": "box",
-                                    "layout": "baseline",
-                                    "margin": "md",
-                                    "contents": [
-                                      { "type": "icon", "size": "sm", "url": "https://developers-resource.landpress.line.me/fx/img/review_gold_star_28.png" },
-                                      { "type": "icon", "size": "sm", "url": "https://developers-resource.landpress.line.me/fx/img/review_gold_star_28.png" },
-                                      { "type": "icon", "size": "sm", "url": "https://developers-resource.landpress.line.me/fx/img/review_gold_star_28.png" },
-                                      { "type": "icon", "size": "sm", "url": "https://developers-resource.landpress.line.me/fx/img/review_gold_star_28.png" },
-                                      { "type": "icon", "url": "https://scdn.line-apps.com/n/channel_devcenter/img/fx/review_gold_star_28.png" },
-                                      { "type": "text", "text": "5.0", "size": "sm", "color": "#999999", "margin": "md", "flex": 0 }
-                                    ]
-                                  },
-                                  {
-                                    "type": "box",
-                                    "layout": "vertical",
-                                    "margin": "lg",
-                                    "spacing": "sm",
-                                    "contents": [
-                                      {
-                                        "type": "box",
-                                        "layout": "baseline",
-                                        "spacing": "sm",
-                                        "contents": [
+                                "type": "box", "layout": "vertical", "contents": [
+                                  { "type": "text", "text": "安聯人壽保戶講座", "weight": "bold", "size": "xl" },
+                                  { "type": "box", "layout": "vertical", "margin": "lg", "spacing": "sm", "contents": [
+                                      { "type": "box", "layout": "baseline", "spacing": "sm", "contents": [
                                           { "type": "text", "text": "地點", "color": "#aaaaaa", "size": "sm", "flex": 1 },
                                           { "type": "text", "text": "台北市信義區基隆路二段51號10樓之二(安聯人壽)", "wrap": true, "color": "#666666", "size": "sm", "flex": 5 }
                                         ]
                                       },
-                                      {
-                                        "type": "box",
-                                        "layout": "baseline",
-                                        "spacing": "sm",
-                                        "contents": [
+                                      { "type": "box", "layout": "baseline", "spacing": "sm", "contents": [
                                           { "type": "text", "text": "時間", "color": "#aaaaaa", "size": "sm", "flex": 1 },
                                           { "type": "text", "text": "2026/3/28(六) 09:00 - 12:00", "wrap": true, "color": "#666666", "size": "sm", "flex": 5 }
                                         ]
@@ -108,46 +77,16 @@
                                 ]
                               },
                               "footer": {
-                                "type": "box",
-                                "layout": "vertical",
-                                "spacing": "sm",
-                                "contents": [
-                                  {
-                                    "type": "button",
-                                    "style": "link",
-                                    "height": "sm",
-                                    "action": {
-                                      "type": "uri",
-                                      "label": "即刻報名",
-                                      "uri": "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform?usp=header"
-                                    }
-                                  },
-                                  {
-                                    "type": "button",
-                                    "style": "link",
-                                    "height": "sm",
-                                    "action": {
-                                      "type": "uri",
-                                      "label": "分享好友",
-                                      "uri": "https://liff.line.me/2009178037-6FFsbvG7"
-                                    }
-                                  }
-                                ],
-                                "flex": 0
-                              },
-                              "styles": {
-                                "footer": { "separator": true }
+                                "type": "box", "layout": "vertical", "spacing": "sm", "contents": [
+                                  { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "即刻報名", "uri": "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform" } },
+                                  { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "分享好友", "uri": "https://liff.line.me/2009178037-6FFsbvG7" } }
+                                ]
                               }
                             }
-                            // --- 您提供的 Simulator JSON 結束 ---
                         }
                     ]);
-                    if (result) {
-                        liff.closeWindow();
-                    }
-                } catch (error) {
-                    alert("發送已取消");
-                }
+                    if (result) { liff.closeWindow(); }
+                } catch (error) { alert("發送失敗，請確認是否已授權"); }
             }
         }
         initLiff();

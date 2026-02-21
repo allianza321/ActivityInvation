@@ -21,11 +21,14 @@
         <div class="event-title">2026年十二星座開運解析</div>
         <div class="info">宏國通訊處 2026/3/28(六)</div>
         <button class="btn-send" onclick="sendActivityFlex()">點此選擇好友發送邀請</button>
-        <div class="version-tag">Ver. 12.7</div>
+        <div class="version-tag">Ver. 12.8</div>
     </div>
 
     <script>
         const liffId = "2009178037-6FFsbvG7";
+        // 更新後的 GAS 網址
+        const gasUrl = "https://script.google.com/macros/s/AKfycbwb92t1vnrncidzJ9HHbBJEGjC0hJaQR3Vt2UD8KvPPsAjsZP_ApkMQeJdlJeAitBRCig/exec";
+        
         let userName = "未知使用者";
         let userId = "無ID";
 
@@ -36,6 +39,9 @@
                     const profile = await liff.getProfile();
                     userName = profile.displayName;
                     userId = profile.userId;
+                    
+                    // 【追蹤保戶】只要有人開啟網頁，就記錄一次動作
+                    logToGAS("進入網頁"); 
                 } else {
                     liff.login();
                 }
@@ -44,15 +50,14 @@
             }
         }
 
-        // 核心功能：透過 GAS 寫入指定活頁簿分頁
-        async function logToPromotionSheet() {
-            const gasUrl = "https://script.google.com/macros/s/AKfycbzwodh-2PTv-Dxazktu8m-6wPNxnNHWmqVoIR_uoikCXYjAhnttnD1TZFe_qXBTFhEE9w/exec";
-            const finalUrl = `${gasUrl}?userId=${encodeURIComponent(userId)}&userName=${encodeURIComponent(userName)}`;
+        // 通用 GAS 紀錄函數
+        async function logToGAS(actionType) {
+            const finalUrl = `${gasUrl}?userId=${encodeURIComponent(userId)}&userName=${encodeURIComponent(userName)}&action=${encodeURIComponent(actionType)}`;
             
-            // 使用 fetch 傳送資料給 GAS
+            // 使用 fetch 傳送資料
             fetch(finalUrl, { mode: 'no-cors' })
-                .then(() => console.log("推廣紀錄已同步"))
-                .catch(e => console.error("同步失敗", e));
+                .then(() => console.log(`紀錄同步成功: ${actionType}`))
+                .catch(e => console.error("紀錄同步失敗", e));
         }
 
         async function sendActivityFlex() {
@@ -104,7 +109,8 @@
                         }
                     }]);
                     if (result) {
-                        await logToPromotionSheet(); // 轉發成功後，悄悄寫入 GAS
+                        // 【紀錄同仁】轉發成功後，寫入 GAS
+                        await logToGAS("分享成功"); 
                         liff.closeWindow();
                     }
                 } catch (error) { console.error(error); }

@@ -21,12 +21,11 @@
         <div class="event-title">2026年十二星座開運解析</div>
         <div class="info">宏國通訊處 2026/3/28(六)</div>
         <button class="btn-send" onclick="sendActivityFlex()">點此選擇好友發送邀請</button>
-        <div class="version-tag">Ver. 12.8</div>
+        <div class="version-tag">Ver. 12.9</div>
     </div>
 
     <script>
         const liffId = "2009178037-6FFsbvG7";
-        // 更新後的 GAS 網址
         const gasUrl = "https://script.google.com/macros/s/AKfycbwb92t1vnrncidzJ9HHbBJEGjC0hJaQR3Vt2UD8KvPPsAjsZP_ApkMQeJdlJeAitBRCig/exec";
         
         let userName = "未知使用者";
@@ -39,30 +38,45 @@
                     const profile = await liff.getProfile();
                     userName = profile.displayName;
                     userId = profile.userId;
+
+                    // 檢查網址是否有動作參數
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const action = urlParams.get('target');
                     
-                    // 【追蹤保戶】只要有人開啟網頁，就記錄一次動作
-                    logToGAS("進入網頁"); 
+                    if (action) {
+                        // 如果帶有特定動作參數，記錄後跳轉
+                        await logToGAS(`點擊-${action}`);
+                        handleRedirect(action);
+                    } else {
+                        // 一般進入網頁
+                        logToGAS("進入網頁");
+                    }
                 } else {
                     liff.login();
                 }
-            } catch (err) {
-                console.error("LIFF 初始化失敗", err);
-            }
+            } catch (err) { console.error("LIFF 初始化失敗", err); }
         }
 
-        // 通用 GAS 紀錄函數
+        // 跳轉邏輯控制
+        function handleRedirect(action) {
+            const calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent("【安聯人壽】2026年十二星座開運解析") + "&dates=20260328T010000Z/20260328T040000Z" + "&location=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二(宏國通訊處)");
+            const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("安聯人壽 宏國通訊處");
+            const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform";
+            const imgUrl = "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328%E4%BF%9D%E6%88%B6%E8%AC%9B%E5%BA%A7%E6%B4%BB%E5%8B%95.JPG?raw=true";
+
+            if (action === "calendar") window.location.href = calendarUrl;
+            else if (action === "map") window.location.href = mapUrl;
+            else if (action === "apply") window.location.href = formUrl;
+            else if (action === "image") window.location.href = imgUrl;
+        }
+
         async function logToGAS(actionType) {
             const finalUrl = `${gasUrl}?userId=${encodeURIComponent(userId)}&userName=${encodeURIComponent(userName)}&action=${encodeURIComponent(actionType)}`;
-            
-            // 使用 fetch 傳送資料
-            fetch(finalUrl, { mode: 'no-cors' })
-                .then(() => console.log(`紀錄同步成功: ${actionType}`))
-                .catch(e => console.error("紀錄同步失敗", e));
+            return fetch(finalUrl, { mode: 'no-cors' });
         }
 
         async function sendActivityFlex() {
-            const calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent("【安聯人壽】2026年十二星座開運解析") + "&dates=20260328T010000Z/20260328T040000Z" + "&details=" + encodeURIComponent("🔔 溫馨提醒：建議將提醒時間設定為「活動前一天」。") + "&location=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二(宏國通訊處)");
-            const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("安聯人壽 宏國通訊處");
+            const liffUrl = `https://liff.line.me/${liffId}`;
 
             if (liff.isApiAvailable('shareTargetPicker')) {
                 try {
@@ -74,7 +88,8 @@
                             "hero": { 
                                 "type": "image", 
                                 "url": "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328_TuYuPing_header1.JPG?raw=true", 
-                                "size": "full", "aspectRatio": "20:13", "aspectMode": "cover" 
+                                "size": "full", "aspectRatio": "20:13", "aspectMode": "cover",
+                                "action": { "type": "uri", "uri": `${liffUrl}?target=image` } 
                             },
                             "body": {
                                 "type": "box", "layout": "vertical", "contents": [
@@ -83,7 +98,7 @@
                                     { "type": "box", "layout": "vertical", "margin": "xl", "spacing": "lg", "contents": [
                                         { 
                                             "type": "box", "layout": "baseline", "spacing": "sm", 
-                                            "action": { "type": "uri", "uri": calendarUrl }, 
+                                            "action": { "type": "uri", "uri": `${liffUrl}?target=calendar` }, 
                                             "contents": [ 
                                                 { "type": "text", "text": "時間", "color": "#aaaaaa", "size": "sm", "flex": 1 }, 
                                                 { "type": "text", "text": "2026/3/28(六) 09:00 - 12:00", "wrap": true, "color": "#0056b3", "size": "sm", "flex": 5, "decoration": "underline" } 
@@ -91,7 +106,7 @@
                                         },
                                         { 
                                             "type": "box", "layout": "baseline", "spacing": "sm", 
-                                            "action": { "type": "uri", "uri": mapUrl }, 
+                                            "action": { "type": "uri", "uri": `${liffUrl}?target=map` }, 
                                             "contents": [ 
                                                 { "type": "text", "text": "地點", "color": "#aaaaaa", "size": "sm", "flex": 1 }, 
                                                 { "type": "text", "text": "台北市信義區基隆路二段51號10樓之二(宏國通訊處)", "wrap": true, "color": "#0056b3", "size": "sm", "flex": 5, "decoration": "underline" } 
@@ -102,14 +117,13 @@
                             },
                             "footer": { 
                                 "type": "box", "layout": "vertical", "spacing": "sm", "contents": [ 
-                                    { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "即刻報名", "uri": "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform" } }, 
-                                    { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "分享好友", "uri": `https://liff.line.me/${liffId}` } } 
+                                    { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "即刻報名", "uri": `${liffUrl}?target=apply` } }, 
+                                    { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "分享好友", "uri": liffUrl } } 
                                 ] 
                             }
                         }
                     }]);
                     if (result) {
-                        // 【紀錄同仁】轉發成功後，寫入 GAS
                         await logToGAS("分享成功"); 
                         liff.closeWindow();
                     }

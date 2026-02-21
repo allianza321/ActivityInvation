@@ -21,7 +21,7 @@
         <div class="event-title">2026年十二星座開運解析</div>
         <div class="info">宏國通訊處 2026/3/28(六)</div>
         <button class="btn-send" onclick="sendActivityFlex()">點此選擇好友發送邀請</button>
-        <div class="version-tag">Ver. 12.9</div>
+        <div class="version-tag">Ver. 13.0</div>
     </div>
 
     <script>
@@ -39,16 +39,15 @@
                     userName = profile.displayName;
                     userId = profile.userId;
 
-                    // 檢查網址是否有動作參數
                     const urlParams = new URLSearchParams(window.location.search);
-                    const action = urlParams.get('target');
+                    const targetAction = urlParams.get('target');
                     
-                    if (action) {
-                        // 如果帶有特定動作參數，記錄後跳轉
-                        await logToGAS(`點擊-${action}`);
-                        handleRedirect(action);
+                    if (targetAction) {
+                        // 若網址帶有跳轉指令，先紀錄動作再跳轉
+                        await logToGAS(`點擊-${targetAction}`);
+                        performRedirect(targetAction);
                     } else {
-                        // 一般進入網頁
+                        // 初次進入頁面
                         logToGAS("進入網頁");
                     }
                 } else {
@@ -57,17 +56,17 @@
             } catch (err) { console.error("LIFF 初始化失敗", err); }
         }
 
-        // 跳轉邏輯控制
-        function handleRedirect(action) {
+        // 統一處理紀錄後的跳轉路徑
+        function performRedirect(target) {
             const calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent("【安聯人壽】2026年十二星座開運解析") + "&dates=20260328T010000Z/20260328T040000Z" + "&location=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二(宏國通訊處)");
             const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("安聯人壽 宏國通訊處");
             const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform";
-            const imgUrl = "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328%E4%BF%9D%E6%88%B6%E8%AC%9B%E5%BA%A7%E6%B4%BB%E5%8B%95.JPG?raw=true";
+            const detailImg = "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328%E4%BF%9D%E6%88%B6%E8%AC%9B%E5%BA%A7%E6%B4%BB%E5%8B%95.JPG?raw=true";
 
-            if (action === "calendar") window.location.href = calendarUrl;
-            else if (action === "map") window.location.href = mapUrl;
-            else if (action === "apply") window.location.href = formUrl;
-            else if (action === "image") window.location.href = imgUrl;
+            if (target === "calendar") window.location.href = calendarUrl;
+            else if (target === "map") window.location.href = mapUrl;
+            else if (target === "apply") window.location.href = formUrl;
+            else if (target === "image") window.location.href = detailImg;
         }
 
         async function logToGAS(actionType) {

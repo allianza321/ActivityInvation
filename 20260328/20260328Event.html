@@ -21,7 +21,7 @@
         <div class="event-title">2026年十二星座開運解析</div>
         <div class="info">宏國通訊處 2026/3/28(六)</div>
         <button class="btn-send" onclick="sendActivityFlex()">點此選擇好友發送邀請</button>
-        <div class="version-tag">Ver. 13.1</div>
+        <div class="version-tag">Ver. 14.0</div>
     </div>
 
     <script>
@@ -38,57 +38,38 @@
                     const profile = await liff.getProfile();
                     userName = profile.displayName;
                     userId = profile.userId;
-
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const targetAction = urlParams.get('target');
-                    
-                    if (targetAction) {
-                        // 若網址帶有跳轉指令，先紀錄動作再跳轉
-                        await logToGAS(`點擊-${targetAction}`);
-                        performRedirect(targetAction);
-                    } else {
-                        // 初次進入頁面
-                        logToGAS("進入網頁");
-                    }
                 } else {
                     liff.login();
                 }
-            } catch (err) { console.error("LIFF 初始化失敗", err); }
+            } catch (err) {
+                console.error("LIFF 初始化失敗", err);
+            }
         }
 
-        // 統一處理紀錄後的跳轉路徑
-        function performRedirect(target) {
-            const calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent("【安聯人壽】2026年十二星座開運解析") + "&dates=20260328T010000Z/20260328T040000Z" + "&location=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二(宏國通訊處)");
-            const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("安聯人壽 宏國通訊處");
-            const formUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform";
-            const detailImg = "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328%E4%BF%9D%E6%88%B6%E8%AC%9B%E5%BA%A7%E6%B4%BB%E5%8B%95.JPG?raw=true";
-
-            if (target === "calendar") window.location.href = calendarUrl;
-            else if (target === "map") window.location.href = mapUrl;
-            else if (target === "apply") window.location.href = formUrl;
-            else if (target === "image") window.location.href = detailImg;
-        }
-
-        async function logToGAS(actionType) {
-            const finalUrl = `${gasUrl}?userId=${encodeURIComponent(userId)}&userName=${encodeURIComponent(userName)}&action=${encodeURIComponent(actionType)}`;
+        // 紀錄分享成功的 GAS 函數
+        async function logShareSuccess() {
+            const finalUrl = `${gasUrl}?userId=${encodeURIComponent(userId)}&userName=${encodeURIComponent(userName)}&action=${encodeURIComponent("分享成功")}`;
             return fetch(finalUrl, { mode: 'no-cors' });
         }
 
         async function sendActivityFlex() {
-            const liffUrl = `https://liff.line.me/${liffId}`;
+            const calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent("【安聯人壽】2026年十二星座開運解析") + "&dates=20260328T010000Z/20260328T040000Z" + "&location=" + encodeURIComponent("台北市信義區基隆路二段51號10樓之二(宏國通訊處)");
+            const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("安聯人壽 宏國通訊處");
+            const applyUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform";
+            const detailImgUrl = "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328_%E5%8D%81%E4%BA%8C%E6%98%9F%E5%BA%A7%E9%96%8B%E9%81%8B%E8%A7%A3%E6%9E%90_%E6%B4%BB%E5%8B%95DM.png?raw=true";
 
             if (liff.isApiAvailable('shareTargetPicker')) {
                 try {
                     const result = await liff.shareTargetPicker([{
                         "type": "flex",
-                        "altText": "宏國通訊處邀約您參加2026/3/28的保戶活動！",
+                        "altText": "您收到一份來自 宏國通訊處 的活動熱情邀約！",
                         "contents": {
                             "type": "bubble",
                             "hero": { 
                                 "type": "image", 
-                                "url": "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328_TuYuPing_header3.JPG?raw=true", 
+                                "url": "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328_TuYuPing_header4.png?raw=true", 
                                 "size": "full", "aspectRatio": "20:13", "aspectMode": "cover",
-                                "action": { "type": "uri", "uri": `${liffUrl}?target=image` } 
+                                "action": { "type": "uri", "uri": detailImgUrl } 
                             },
                             "body": {
                                 "type": "box", "layout": "vertical", "contents": [
@@ -97,7 +78,7 @@
                                     { "type": "box", "layout": "vertical", "margin": "xl", "spacing": "lg", "contents": [
                                         { 
                                             "type": "box", "layout": "baseline", "spacing": "sm", 
-                                            "action": { "type": "uri", "uri": `${liffUrl}?target=calendar` }, 
+                                            "action": { "type": "uri", "uri": calendarUrl }, 
                                             "contents": [ 
                                                 { "type": "text", "text": "時間", "color": "#aaaaaa", "size": "sm", "flex": 1 }, 
                                                 { "type": "text", "text": "2026/3/28(六) 09:00 - 12:00", "wrap": true, "color": "#0056b3", "size": "sm", "flex": 5, "decoration": "underline" } 
@@ -105,7 +86,7 @@
                                         },
                                         { 
                                             "type": "box", "layout": "baseline", "spacing": "sm", 
-                                            "action": { "type": "uri", "uri": `${liffUrl}?target=map` }, 
+                                            "action": { "type": "uri", "uri": mapUrl }, 
                                             "contents": [ 
                                                 { "type": "text", "text": "地點", "color": "#aaaaaa", "size": "sm", "flex": 1 }, 
                                                 { "type": "text", "text": "台北市信義區基隆路二段51號10樓之二(宏國通訊處)", "wrap": true, "color": "#0056b3", "size": "sm", "flex": 5, "decoration": "underline" } 
@@ -116,14 +97,15 @@
                             },
                             "footer": { 
                                 "type": "box", "layout": "vertical", "spacing": "sm", "contents": [ 
-                                    { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "即刻報名", "uri": `${liffUrl}?target=apply` } }, 
-                                    { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "分享好友", "uri": liffUrl } } 
+                                    { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "即刻報名", "uri": applyUrl } }, 
+                                    { "type": "button", "style": "link", "height": "sm", "action": { "type": "uri", "label": "分享好友", "uri": `https://liff.line.me/${liffId}` } } 
                                 ] 
                             }
                         }
                     }]);
                     if (result) {
-                        await logToGAS("分享成功"); 
+                        // 僅保留分享成功的紀錄
+                        await logShareSuccess(); 
                         liff.closeWindow();
                     }
                 } catch (error) { console.error(error); }

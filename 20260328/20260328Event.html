@@ -21,7 +21,7 @@
 </head>
 <body>
     <div class="card">
-        <img src="https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328_TuYuPing_header5.JPG?raw=true" class="banner-img" alt="Banner">
+        <img src="https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328_TuYuPing_header6_T.JPG.JPG?raw=true" class="banner-img" alt="Banner">
         <div class="content">
             <h2>安聯人壽保戶講座</h2>
             <div class="event-title">2026年十二星座開運解析</div>
@@ -32,7 +32,7 @@
             <button class="btn-send" onclick="sendActivityFlex()">點此選擇好友發送邀請</button>
         </div>
     </div>
-    <div class="version-tag">Ver. 15.1</div>
+    <div class="version-tag">Ver. 15.2</div>
 
     <script>
         const liffId = "2009178037-6FFsbvG7";
@@ -64,7 +64,6 @@
             const applyUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform";
             const detailImgUrl = "https://github.com/allianza321/ActivityInvation/blob/allianza321-Activity/20260328/20260328_Allianz%20CS_DM.JPG?raw=true";
 
-            // 建立要發送的訊息陣列
             const messages = [
                 {
                     "type": "flex",
@@ -96,12 +95,8 @@
                 }
             ];
 
-            // 如果同仁有輸入留言，則將留言加入發送陣列的第二項
             if (customMsg.trim() !== "") {
-                messages.push({
-                    "type": "text",
-                    "text": customMsg
-                });
+                messages.push({ "type": "text", "text": customMsg });
             }
 
             if (liff.isApiAvailable('shareTargetPicker')) {

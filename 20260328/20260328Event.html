@@ -14,7 +14,13 @@
         .event-title { color: #E67E22; font-size: 1.1rem; font-weight: bold; margin-bottom: 1rem; }
         .msg-box { width: 100%; margin-bottom: 0.8rem; text-align: left; }
         label { font-size: 0.9rem; color: #555; font-weight: bold; display: block; margin-bottom: 5px; }
+        .tip-text { font-size: 0.75rem; color: #e74c3c; margin-bottom: 8px; display: block; }
         input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 10px; font-size: 0.95rem; resize: none; box-sizing: border-box; }
+        
+        /* 隨機按鈕樣式 */
+        .btn-random { background-color: #f8f9fa; border: 1px solid #003777; color: #003777; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem; cursor: pointer; float: right; transition: 0.3s; }
+        .btn-random:hover { background-color: #003777; color: white; }
+        
         .btn-send { width: 100%; padding: 15px; font-size: 1.1rem; background: linear-gradient(135deg, #0056b3 0%, #003777 100%); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(0,55,119,0.3); transition: 0.3s; margin-top: 10px; }
         .version-tag { font-size: 10px; color: #ccc; margin-top: 15px; }
     </style>
@@ -28,18 +34,20 @@
             
             <div class="msg-box">
                 <label for="friendName">👤 好友稱呼：</label>
-                <input type="text" id="friendName" placeholder="例如：陳大哥、美玲姐">
+                <span class="tip-text">⚠️ 若一次選多位好友，稱呼建議填通用型（如：Hi）</span>
+                <input type="text" id="friendName" placeholder="例如：陳大哥、或是通用的 Hi">
             </div>
 
             <div class="msg-box">
+                <button class="btn-random" onclick="getRandomWish()">🎲 隨機留言</button>
                 <label for="userMsg">✍️ 想要對好友說的話：</label>
-                <textarea id="userMsg" rows="3" placeholder="例如：這場講座內容很充實，推薦您來看看～"></textarea>
+                <textarea id="userMsg" rows="3" placeholder="請輸入想說的話..."></textarea>
             </div>
             
             <button class="btn-send" onclick="sendActivityFlex()">點此選擇好友發送邀請</button>
         </div>
     </div>
-    <div class="version-tag">Ver. 16.0</div>
+    <div class="version-tag">Ver. 16.2</div>
 
     <script>
         const liffId = "2009178037-6FFsbvG7";
@@ -47,6 +55,19 @@
         
         let userName = "未知使用者";
         let userId = "無ID";
+
+        const wishes = [
+            "好久不見！這場星座講座內容很充實，推薦您來看看，希望能對您的 2026 運勢有幫助～",
+            "最近好嗎？我們公司辦了一場很棒的星座開運講座，講師非常專業，邀請您一起來參加！",
+            "分享一個很實用的活動給您！關於十二星座的開運解析，感覺您會感興趣，參考看看喔～",
+            "誠摯邀請您參加這場精彩講座！不僅可以了解星座運勢，還能跟專家交流，機會難得別錯過囉！",
+            "這場講座是專門為保戶準備的開運驚喜，內容非常精彩，歡迎點擊連結了解詳情！"
+        ];
+
+        function getRandomWish() {
+            const randomIndex = Math.floor(Math.random() * wishes.length);
+            document.getElementById('userMsg').value = wishes[randomIndex];
+        }
 
         async function initLiff() {
             try {
@@ -68,7 +89,6 @@
             const friendName = document.getElementById('friendName').value;
             const customMsg = document.getElementById('userMsg').value;
             
-            // 組合最終訊息：[稱呼]，[留言]
             let finalMsg = "";
             if (friendName && customMsg) finalMsg = `${friendName}，${customMsg}`;
             else if (friendName) finalMsg = `${friendName}，誠摯邀請您參加這場講座！`;

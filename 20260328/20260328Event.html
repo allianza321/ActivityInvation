@@ -17,11 +17,16 @@
         .tip-text { font-size: 0.75rem; color: #e74c3c; margin-bottom: 8px; display: block; }
         input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 10px; font-size: 0.95rem; resize: none; box-sizing: border-box; }
         
-        /* 隨機按鈕樣式 */
         .btn-random { background-color: #f8f9fa; border: 1px solid #003777; color: #003777; padding: 5px 12px; border-radius: 15px; font-size: 0.8rem; cursor: pointer; float: right; transition: 0.3s; }
         .btn-random:hover { background-color: #003777; color: white; }
         
         .btn-send { width: 100%; padding: 15px; font-size: 1.1rem; background: linear-gradient(135deg, #0056b3 0%, #003777 100%); color: white; border: none; border-radius: 50px; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(0,55,119,0.3); transition: 0.3s; margin-top: 10px; }
+        
+        /* 預覽區樣式 */
+        .preview-box { margin-top: 20px; padding: 15px; background-color: #f0f2f5; border-radius: 15px; border: 1px dashed #ccc; text-align: left; }
+        .preview-title { font-size: 0.8rem; color: #888; margin-bottom: 8px; font-weight: bold; border-bottom: 1px solid #ddd; padding-bottom: 5px; }
+        .preview-text { font-size: 0.9rem; color: #333; line-height: 1.5; white-space: pre-wrap; }
+
         .version-tag { font-size: 10px; color: #ccc; margin-top: 15px; }
     </style>
 </head>
@@ -35,19 +40,24 @@
             <div class="msg-box">
                 <label for="friendName">👤 好友稱呼：</label>
                 <span class="tip-text">⚠️ 若一次選多位好友，稱呼建議填通用型（如：Hi）</span>
-                <input type="text" id="friendName" placeholder="例如：陳大哥、或是通用的 Hi">
+                <input type="text" id="friendName" placeholder="例如：陳大哥、或是通用的 Hi" oninput="updatePreview()">
             </div>
 
             <div class="msg-box">
                 <button class="btn-random" onclick="getRandomWish()">🎲 隨機留言</button>
                 <label for="userMsg">✍️ 想要對好友說的話：</label>
-                <textarea id="userMsg" rows="3" placeholder="請輸入想說的話..."></textarea>
+                <textarea id="userMsg" rows="3" placeholder="請輸入想說的話..." oninput="updatePreview()"></textarea>
             </div>
             
             <button class="btn-send" onclick="sendActivityFlex()">點此選擇好友發送邀請</button>
+
+            <div class="preview-box">
+                <div class="preview-title">💬 訊息預覽 (緊隨卡片後發出)</div>
+                <div id="textPreview" class="preview-text">誠摯邀請您參加這場講座！</div>
+            </div>
         </div>
     </div>
-    <div class="version-tag">Ver. 16.2</div>
+    <div class="version-tag">Ver. 16.3</div>
 
     <script>
         const liffId = "2009178037-6FFsbvG7";
@@ -61,12 +71,28 @@
             "最近好嗎？我們公司辦了一場很棒的星座開運講座，講師非常專業，邀請您一起來參加！",
             "分享一個很實用的活動給您！關於十二星座的開運解析，感覺您會感興趣，參考看看喔～",
             "誠摯邀請您參加這場精彩講座！不僅可以了解星座運勢，還能跟專家交流，機會難得別錯過囉！",
-            "這場講座是專門為保戶準備的開運驚喜，內容非常精彩，歡迎點擊連結了解詳情！"
+            "這場講座是專門為保戶準備的開運驚喜，內容非常精彩，歡迎點點連結了解詳情！"
         ];
 
         function getRandomWish() {
             const randomIndex = Math.floor(Math.random() * wishes.length);
             document.getElementById('userMsg').value = wishes[randomIndex];
+            updatePreview();
+        }
+
+        // 即時更新預覽文字
+        function updatePreview() {
+            const friendName = document.getElementById('friendName').value;
+            const customMsg = document.getElementById('userMsg').value;
+            const previewEl = document.getElementById('textPreview');
+            
+            let finalMsg = "";
+            if (friendName && customMsg) finalMsg = `${friendName}，${customMsg}`;
+            else if (friendName) finalMsg = `${friendName}，誠摯邀請您參加這場講座！`;
+            else if (customMsg) finalMsg = customMsg;
+            else finalMsg = "誠摯邀請您參加這場講座！";
+
+            previewEl.innerText = finalMsg;
         }
 
         async function initLiff() {
@@ -86,14 +112,7 @@
         }
 
         async function sendActivityFlex() {
-            const friendName = document.getElementById('friendName').value;
-            const customMsg = document.getElementById('userMsg').value;
-            
-            let finalMsg = "";
-            if (friendName && customMsg) finalMsg = `${friendName}，${customMsg}`;
-            else if (friendName) finalMsg = `${friendName}，誠摯邀請您參加這場講座！`;
-            else if (customMsg) finalMsg = customMsg;
-
+            const previewText = document.getElementById('textPreview').innerText;
             const calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE&text=" + encodeURIComponent("【安聯人壽】2026年十二星座開運解析") + "&dates=20260328T010000Z/20260328T040000Z";
             const mapUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("安聯人壽 宏國通訊處");
             const applyUrl = "https://docs.google.com/forms/d/e/1FAIpQLSfwNIB1dN8B1A-BIqAjxtzlIO4fUP_LAs-6_29t5TPI5Fpndg/viewform";
@@ -131,8 +150,9 @@
                 }
             ];
 
-            if (finalMsg.trim() !== "") {
-                messages.push({ "type": "text", "text": finalMsg });
+            // 使用預覽框內的文字發送訊息
+            if (previewText.trim() !== "") {
+                messages.push({ "type": "text", "text": previewText });
             }
 
             if (liff.isApiAvailable('shareTargetPicker')) {
